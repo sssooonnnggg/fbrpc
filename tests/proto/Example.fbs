@@ -1,0 +1,32 @@
+﻿namespace ExampleNamespace;
+
+table HelloWorldRequest {
+	name: string;
+}
+
+table HelloWorldResponse {
+	message: string;    
+}
+
+table DelayAddRequest {
+	a: double;
+	b: double;
+}
+
+table DelayAddResponse {
+	result: double;
+}
+
+table EventDataFilter {
+	min: int32;
+}
+
+table ObjectCreateEvent {
+	data: int32;
+}
+
+rpc_service Example {
+	helloWorld(HelloWorldRequest): HelloWorldResponse;
+	delayAdd(DelayAddRequest): DelayAddResponse;
+	subscribeObjectCreateEvent(EventDataFilter): ObjectCreateEvent;
+}
