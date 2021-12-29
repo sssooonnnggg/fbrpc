@@ -22,8 +22,8 @@ function (createSrcGroups ROOT FILE_LIST)
   endforeach ()
 endfunction ()
 
-set(LIB_ROOT ${CMAKE_SOURCE_DIR}/lib)
+set(LIB_ROOT ${CMAKE_SOURCE_DIR}/fbrpc)
 
-add_subdirectory(lib)
+add_subdirectory(fbrpc)
 add_subdirectory(tests)
 add_subdirectory(generator)

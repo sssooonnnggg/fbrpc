@@ -11,7 +11,7 @@ table HelloWorldResponse {
 table DelayAddRequest {
 	a: double;
 	b: double;
-}
+} 
 
 table DelayAddResponse {
 	result: double;

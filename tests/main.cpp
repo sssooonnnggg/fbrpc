@@ -4,9 +4,9 @@
 #include "generated/ExampleService_generated.h"
 #include "generated/ExampleStub_generated.h"
 
-#include "ssFlatBufferRpc.h"
-#include "core/ssLogger.h"
-#include "utils/ssTimer.h"
+#include "fbrpc/ssFlatBufferRpc.h"
+#include "fbrpc/core/ssLogger.h"
+#include "fbrpc/utils/ssTimer.h"
 
 using namespace fbrpc;
 using namespace ExampleNamespace;

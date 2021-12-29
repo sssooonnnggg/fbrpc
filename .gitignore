@@ -1,3 +1,5 @@
 .vs
 project
+bin
+lib
 tests/generated

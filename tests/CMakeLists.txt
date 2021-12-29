@@ -18,7 +18,7 @@ foreach(PROTO_FILE ${PROTO_FILES})
     list(APPEND PROTO_GEN_FILES ${PROTO_GEN_FILE})
     add_custom_command(
         OUTPUT ${PROTO_GEN_FILE}
-        COMMAND ${FLATC_PATH} -c --ts -o ${PROTO_GEN_ROOT} -I ${PROTO_ROOT} ${PROTO_FILE}
+        COMMAND ${FLATC_PATH} -c -o ${PROTO_GEN_ROOT} -I ${PROTO_ROOT} ${PROTO_FILE}
         DEPENDS ${PROTO_FILE}
         COMMENT "[flatc] generating ${PROTO_FILE} to ${PROTO_GEN_FILE} ..."
         VERBATIM
@@ -29,7 +29,7 @@ foreach(PROTO_FILE ${PROTO_FILES})
     set(STUB_GEN_FILE ${PROTO_GEN_ROOT}/${STUB_GEN_FILE_NAME})
     add_custom_command(
         OUTPUT ${SERVICE_GEN_FILE} ${STUB_GEN_FILE}
-        COMMAND $<TARGET_FILE:fbrpc_generator> ${PROTO_FILE} ${SERVICE_GEN_ROOT}
+        COMMAND $<TARGET_FILE:fbrpc_generator> -c ${PROTO_FILE} ${SERVICE_GEN_ROOT}
         DEPENDS ${PROTO_FILE}
         COMMENT "[fbrpc_generator] generating ${PROTO_FILE} services ..."
         VERBATIM
@@ -43,5 +43,13 @@ add_executable(fbrpc_test ${SOURCE_FILES} ${PROTO_GEN_FILES} ${SERVICE_GEN_FILES
 
 add_dependencies(fbrpc_test fbrpc_generator)
 
-target_include_directories(fbrpc_test PRIVATE ${LIB_ROOT})
+target_include_directories(fbrpc_test PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(fbrpc_test libfbrpc)
+
+set(TARGET_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/bin)
+
+set_target_properties(fbrpc_test PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_OUTPUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${TARGET_OUTPUT_DIR}
+    RUNTIME_OUTPUT_DIRECTORY_RELWITHDEBINFO ${TARGET_OUTPUT_DIR}
+)
