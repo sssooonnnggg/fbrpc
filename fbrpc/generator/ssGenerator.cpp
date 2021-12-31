@@ -10,6 +10,7 @@
 #include "ssGenerator.h"
 #include "ssCppGenerator.h"
 #include "ssNodeGenerator.h"
+#include "ssTSGenerator.h"
 
 namespace fbrpc
 {
@@ -143,6 +144,8 @@ namespace fbrpc
 			return std::make_unique<sCppGenerator>(std::move(writter));
 		else if (m_language == eLanguageType::kNode)
 			return std::make_unique<sNodeGenerator>(std::move(writter));
+		else if (m_language == eLanguageType::kTypeScript)
+			return std::make_unique<sTSGenerator>(std::move(writter));
 
 		return nullptr;
 	}

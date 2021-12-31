@@ -7,12 +7,12 @@ namespace fbrpc
 {
 	bool sNodeGenerator::start(flatbuffers::ServiceDef* service)
 	{
-		return generateNodeBindingFile(service) && generateTypeScriptFile(service);
+		return generateNodeBindingFile(service);
 	}
 
 	bool sNodeGenerator::finish(std::vector<flatbuffers::ServiceDef*> services)
 	{
-		return generateFlatBufferBindingFile(services);
+		return finishNodeBindingFile(services);
 	}
 
 	bool sNodeGenerator::generateNodeBindingFile(flatbuffers::ServiceDef* service)
@@ -28,7 +28,7 @@ namespace fbrpc
 		printer.nextLine();
 
 		{
-			std::unique_ptr<sScope> namespaceScope;
+			std::unique_ptr<sPrinter::sScope> namespaceScope;
 			if (!namespaces.empty())
 				namespaceScope = printer.addNamespace(namespaces[0]);
 
@@ -44,11 +44,8 @@ namespace fbrpc
 
 					printer.addContent(R"#(static void )#" + apiName + R"#((fbrpc::sBuffer buffer, std::function<void(fbrpc::sBuffer)> callback)
 {
-	auto client = FlatbufferClient::get();
-	if (!client || !client->isConnected())
-		throw std::runtime_error("clinet is not connected");
-
 	static std::size_t apiHash = fbrpc::getHash(")#" + apiName + R"#(");
+	auto client = FlatbufferClient::get();
 	client->call(serviceHash(), apiHash, std::move(buffer), [callback](fbrpc::sBufferView view)
 		{
 			callback(fbrpc::sBuffer::clone(view.data, view.length));
@@ -76,12 +73,7 @@ namespace fbrpc
 		return writter()(printer.getOutput(), serviceName + "Binding_generated.h");
 	}
 
-	bool sNodeGenerator::generateTypeScriptFile(flatbuffers::ServiceDef* service)
-	{
-		return true;
-	}
-
-	bool sNodeGenerator::generateFlatBufferBindingFile(const std::vector<flatbuffers::ServiceDef*>& services)
+	bool sNodeGenerator::finishNodeBindingFile(const std::vector<flatbuffers::ServiceDef*>& services)
 	{
 		sCppPrinter printer;
 		printer.addHeader();

@@ -11,7 +11,8 @@ namespace fbrpc
 	enum class eLanguageType
 	{
 		kCpp,
-		kNode
+		kNode,
+		kTypeScript
 	};
 
 	class sLanguageGenerator;

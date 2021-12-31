@@ -7,7 +7,8 @@ void printUsage()
 	printf(R"#(Usage: fbrpc_generator [language type] [proto file path or folder] [output folder]
 language type:
 	-c, --cpp			generate cpp files
-	-n, --node			generate node binding files and typescript files
+	-n, --node			generate node binding files
+	-t, --ts			generate typescript binding files
 
 if pass a proto file path, generate files for this proto file.
 if pass a folder path which containing proto files, generate for all proto files in folder.
@@ -40,6 +41,8 @@ public:
 			m_languageType = fbrpc::eLanguageType::kCpp;
 		else if (languageType == "-n" || languageType == "--node")
 			m_languageType = fbrpc::eLanguageType::kNode;
+		else if (languageType == "-t" || languageType == "--ts")
+			m_languageType = fbrpc::eLanguageType::kTypeScript;
 		else
 			return false;
 

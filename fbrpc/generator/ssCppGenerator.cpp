@@ -26,7 +26,7 @@ namespace fbrpc
 			printer.addContent("using namespace fbrpc;");
 			printer.nextLine();
 
-			std::unique_ptr<sScope> namespaceScope;
+			std::unique_ptr<sPrinter::sScope> namespaceScope;
 			if (!namespaces.empty())
 				namespaceScope = printer.addNamespace(namespaces[0]);
 
@@ -93,7 +93,7 @@ addApiWrapper(getHash(")#" + apiName + R"#("), [this](sBufferView buffer, sRespo
 			printer.addContent("using namespace fbrpc;");
 			printer.nextLine();
 
-			std::unique_ptr<sScope> namespaceScope;
+			std::unique_ptr<sPrinter::sScope> namespaceScope;
 			if (!namespaces.empty())
 				namespaceScope = printer.addNamespace(namespaces[0]);
 

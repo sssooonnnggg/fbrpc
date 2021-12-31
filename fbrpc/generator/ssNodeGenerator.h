@@ -4,6 +4,8 @@
 
 namespace fbrpc
 {
+	class sTSPrinter;
+
 	class sNodeGenerator : public sLanguageGenerator
 	{
 	public:
@@ -12,7 +14,6 @@ namespace fbrpc
 		bool finish(std::vector<flatbuffers::ServiceDef*> services) override;
 	private:
 		bool generateNodeBindingFile(flatbuffers::ServiceDef* service);
-		bool generateTypeScriptFile(flatbuffers::ServiceDef* service);
-		bool generateFlatBufferBindingFile(const std::vector<flatbuffers::ServiceDef*>& services);
+		bool finishNodeBindingFile(const std::vector<flatbuffers::ServiceDef*>& services);
 	};
 }
