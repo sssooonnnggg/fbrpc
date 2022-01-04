@@ -25,7 +25,7 @@ namespace fbrpc
 		unsigned int port;
 	};
 
-	class sFlatBufferRpcServer
+	class sFlatBufferRpcServer : public sEmitter<sFlatBufferRpcServer>
 	{
 	public:
 		static std::unique_ptr<sFlatBufferRpcServer> create(sTCPOption option);
@@ -37,7 +37,6 @@ namespace fbrpc
 
 		virtual void update() = 0;
 
-		virtual ~sFlatBufferRpcServer() = default;
 	protected:
 		sFlatBufferRpcServer(std::unique_ptr<sServer> server);
 	private:
@@ -57,13 +56,13 @@ namespace fbrpc
 		sBuffer m_buffer;
 	};
 
-	class sFlatBufferRpcClient
+	class sFlatBufferRpcClient : public sEmitter<sFlatBufferRpcClient>
 	{
 	public:
-		virtual ~sFlatBufferRpcClient() = default;
 		virtual void update() = 0;
 
 		static std::unique_ptr<sFlatBufferRpcClient> create(sTCPOption option);
+
 		void connect();
 		bool isConnected() const { return m_connected; }
 

@@ -105,6 +105,6 @@ namespace fbrpc
 			}
 		}
 
-		return writter()(printer.getOutput(), "FlatBufferBinding_generated.h");
+		return writter()(printer.getOutput(), "FlatBufferRpcBinding_generated.h");
 	}
 }

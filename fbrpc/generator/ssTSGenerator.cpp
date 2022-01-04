@@ -1,3 +1,5 @@
+#include <array>
+
 #include "flatbuffers/idl.h"
 
 #include "ssTSPrinter.h"
@@ -6,6 +8,24 @@
 
 namespace fbrpc
 {
+	namespace
+	{
+		constexpr std::string_view BindingTargetName = "fbrpc_binding";
+
+		struct sGlobalFunction
+		{
+			std::string_view name;
+			std::string_view decl;
+		};
+		constexpr std::array<sGlobalFunction, 1> GlobalFunctions = 
+		{ {
+			{
+				"connect",
+				"export function connect(option: { address: string, port: number }): Promise<{result:boolean, message:string}>"
+			}
+		} };
+	}
+
 	bool sTSGenerator::start(flatbuffers::ServiceDef* service)
 	{
 		return generateTSDeclareFile(service) && generateTSWrapperFile(service);
@@ -40,7 +60,7 @@ namespace fbrpc
 		printer.addHeader();
 
 		printer.addImport("* as flatbuffers", "flatbuffers");
-		printer.addImport(std::string("{ ") + serviceName + " }", "./flatbuffer_binding");
+		printer.addImport(std::string("{ ") + serviceName + " }", std::string("./") + BindingTargetName.data());
 
 		importDependentTypes(printer, service);
 		printer.nextLine();
@@ -79,9 +99,7 @@ namespace fbrpc
     })
 })#");
 				}
-
 			}
-
 		}
 
 		return writter()(printer.getOutput(), serviceName + "API.ts");
@@ -92,12 +110,13 @@ namespace fbrpc
 		sTSPrinter printer;
 		printer.addHeader();
 
-		printer.addContent("export function connect(option: { address: string, port: number }): boolean");
+		for (auto globalFunction : GlobalFunctions)
+			printer.addContent(globalFunction.decl);
 
 		for (auto service : services)
 			printer.addContent(std::string("export { ") + service->name + " } from './" + service->name + "'");
 
-		return writter()(printer.getOutput(), "flatbuffer_binding.d.ts");
+		return writter()(printer.getOutput(), std::string(BindingTargetName.data()) + ".d.ts");
 	}
 
 	bool sTSGenerator::finishTSWrapperFile(const std::vector<flatbuffers::ServiceDef*>& services)
@@ -105,7 +124,8 @@ namespace fbrpc
 		sTSPrinter printer;
 		printer.addHeader();
 
-		printer.addContent("export { connect } from './flatbuffer_binding'");
+		for (auto globalFunction : GlobalFunctions)
+			printer.addContent(std::string("export { ") + globalFunction.name.data() + " } from './" + BindingTargetName.data() + "'");
 
 		for (auto service : services)
 			exportDependentTypes(printer, service);

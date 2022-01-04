@@ -6,9 +6,9 @@ target_link_libraries(fbrpc_generator libfbrpc)
 
 get_target_property(GENERATOR_PATH fbrpc_generator CMAKE_BINARY_DIR)
 
-target_include_directories(fbrpc_generator PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(fbrpc_generator PRIVATE ${FBRPC_ROOT})
 
-set(TARGET_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(TARGET_OUTPUT_DIR ${FBRPC_ROOT}/bin)
 
 set_target_properties(fbrpc_generator PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_OUTPUT_DIR}

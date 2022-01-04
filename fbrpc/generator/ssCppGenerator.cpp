@@ -37,7 +37,7 @@ namespace fbrpc
 				auto classScope = printer.addClass(className, "sService");
 				printer.addClassAccessSpecifier("public:");
 				printer.addContent(
-					std::string(R"#(std::string name() const override { return ")#") + className + std::string(R"#("; })#"));
+					std::string("std::string name() const override { return \"") + className + "\"; }");
 
 				for (auto call : service->calls.vec)
 				{

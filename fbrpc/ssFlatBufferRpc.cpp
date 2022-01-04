@@ -50,21 +50,25 @@ namespace fbrpc
 	void sFlatBufferRpcServer::processServerError(const sError& error)
 	{
 		logger().error("server error", error.errorCode, error.msg);
+		emit(error);
 	}
 
 	void sFlatBufferRpcServer::processClientError(int clientId, const sError& error)
 	{
 		logger().error("client error", clientId, error.errorCode, error.msg);
+		emit(error);
 	}
 
-	void sFlatBufferRpcServer::processClientClose(int clientId, const sCloseEvent&)
+	void sFlatBufferRpcServer::processClientClose(int clientId, const sCloseEvent& close)
 	{
 		logger().error("client close", clientId);
+		emit(close);
 	}
 
-	void sFlatBufferRpcServer::processClientEnd(int clientId, const sEndEvent&)
+	void sFlatBufferRpcServer::processClientEnd(int clientId, const sEndEvent& end)
 	{
 		logger().error("client end", clientId);
+		emit(end);
 	}
 
 	void sFlatBufferRpcServer::processBuffer(sBufferView buffer)
@@ -139,16 +143,19 @@ namespace fbrpc
 	void sFlatBufferRpcClient::processError(const sError& error)
 	{
 		logger().error("client error", error.errorCode, error.msg);
+		emit(error);
 	}
 
-	void sFlatBufferRpcClient::processClose(const sCloseEvent&)
+	void sFlatBufferRpcClient::processClose(const sCloseEvent& close)
 	{
 		logger().error("client close");
+		emit(close);
 	}
 
-	void sFlatBufferRpcClient::processEnd(const sEndEvent&)
+	void sFlatBufferRpcClient::processEnd(const sEndEvent& end)
 	{
 		logger().error("client end");
+		emit(end);
 	}
 
 	void sFlatBufferRpcClient::processConnection(const sConnectionEvent& e)
@@ -163,6 +170,8 @@ namespace fbrpc
 		m_connection->on<sDataEvent>([this](const sDataEvent& e) { processBuffer(sBufferView{ e.data, e.length }); });
 
 		m_connected = true;
+
+		emit(e);
 	}
 
 	void sFlatBufferRpcClient::processBuffer(sBufferView buffer)

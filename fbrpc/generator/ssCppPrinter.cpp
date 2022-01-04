@@ -12,7 +12,7 @@ namespace fbrpc
 
 	void sCppPrinter::addInclude(std::string_view includeFilePath)
 	{
-		addSingleLine(std::string(R"#(#include ")#") + std::string(includeFilePath) + "\"");
+		addSingleLine(std::string("#include \"") + std::string(includeFilePath) + "\"");
 	}
 
 	std::unique_ptr<sPrinter::sScope> sCppPrinter::addNamespace(std::string_view name)

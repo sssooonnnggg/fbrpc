@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 
 # gen flatbuffers proto
-find_path(FLAT_BUFFER_PATH flatbuffers/flatbuffers.h NO_CACHE)
-set(FLATC_PATH "${FLAT_BUFFER_PATH}/../tools/flatbuffers/flatc")
+if(USE_VCPKG)
+    find_path(FLAT_BUFFER_PATH flatbuffers/flatbuffers.h NO_CACHE)
+    set(FLATC_PATH "${FLAT_BUFFER_PATH}/../tools/flatbuffers/flatc")
+endif()
 
 set(PROTO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/proto)
 set(PROTO_GEN_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/generated)
@@ -43,10 +45,10 @@ add_executable(fbrpc_test ${SOURCE_FILES} ${PROTO_GEN_FILES} ${SERVICE_GEN_FILES
 
 add_dependencies(fbrpc_test fbrpc_generator)
 
-target_include_directories(fbrpc_test PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(fbrpc_test PRIVATE ${FBRPC_ROOT})
 target_link_libraries(fbrpc_test libfbrpc)
 
-set(TARGET_OUTPUT_DIR ${CMAKE_SOURCE_DIR}/bin)
+set(TARGET_OUTPUT_DIR ${FBRPC_ROOT}/bin)
 
 set_target_properties(fbrpc_test PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG ${TARGET_OUTPUT_DIR}
