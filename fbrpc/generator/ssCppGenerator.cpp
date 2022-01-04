@@ -3,6 +3,8 @@
 #include "ssCppPrinter.h"
 #include "ssCppGenerator.h"
 
+#include "ssUtils.h"
+
 namespace fbrpc
 {
 	bool sCppGenerator::start(flatbuffers::ServiceDef* service)
@@ -42,8 +44,13 @@ namespace fbrpc
 					auto apiName = call->name;
 					auto requestName = call->request->name;
 					auto responseName = call->response->name;
-					printer.addContent("virtual void " + apiName + "(const " + requestName + "* request, std::unique_ptr<sPromise<"
-						+ responseName + ">> response) = 0; ");
+
+					if (generatorUtils::isEvent(responseName))
+						printer.addContent("virtual void " + apiName + "(const " + requestName + "* filter, std::unique_ptr<sEventEmitter<"
+							+ responseName + ">> emitter) = 0; ");
+					else
+						printer.addContent("virtual void " + apiName + "(const " + requestName + "* request, std::unique_ptr<sPromise<"
+							+ responseName + ">> response) = 0; ");
 				}
 
 				printer.nextLine();

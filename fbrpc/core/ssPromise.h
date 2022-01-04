@@ -9,11 +9,16 @@ namespace fbrpc
 	class sPromise : public sFlatBufferHelper
 	{
 	public:
-		void finish(flatbuffers::Offset<T> value)
+		void resolve(flatbuffers::Offset<T> value)
 		{
 			builder().Finish(value);
 			triggerBinding();
 			builder().Clear();
+		}
+
+		void emit(flatbuffers::Offset<T> value)
+		{
+			resolve(value);
 		}
 
 		using sBinding = sUniqueFunction<void()>;
@@ -28,4 +33,7 @@ namespace fbrpc
 		flatbuffers::Offset<T> m_offset;
 		sBinding m_binding;
 	};
+
+	template <class T>
+	using sEventEmitter = sPromise<T>;
 }

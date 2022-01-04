@@ -2,36 +2,10 @@
 
 #include "ssTSPrinter.h"
 #include "ssTSGenerator.h"
+#include "ssUtils.h"
 
 namespace fbrpc
 {
-	namespace
-	{
-		std::string toDasherizedCase(std::string camel)
-		{
-			std::string result;
-			for (auto c : camel)
-			{
-				if (std::isupper(c))
-				{
-					if (!result.empty())
-						result += "-";
-					result += std::tolower(c);
-				}
-				else
-				{
-					result += c;
-				}
-			}
-			return result;
-		};
-
-		bool isEvent(const std::string& responseName)
-		{
-			return responseName.find("Event") != std::string::npos;
-		}
-	}
-
 	bool sTSGenerator::start(flatbuffers::ServiceDef* service)
 	{
 		return generateTSDeclareFile(service) && generateTSWrapperFile(service);
@@ -79,7 +53,7 @@ namespace fbrpc
 				auto requestName = call->request->name;
 				auto responseName = call->response->name;
 
-				if (isEvent(responseName))
+				if (generatorUtils::isEvent(responseName))
 				{
 					printer.addContent("static " + api + "(filter: " + requestName + "T, callback: (event: " + responseName + R"#(T) => void) {
     let builder = new flatbuffers.Builder();
@@ -118,7 +92,7 @@ namespace fbrpc
 		sTSPrinter printer;
 		printer.addHeader();
 
-		printer.addContent("export function connect(option: { address: string, port: number }): number");
+		printer.addContent("export function connect(option: { address: string, port: number }): boolean");
 
 		for (auto service : services)
 			printer.addContent(std::string("export { ") + service->name + " } from './" + service->name + "'");
@@ -189,9 +163,11 @@ namespace fbrpc
 			addDependentType(call->response->name);
 		}
 
-		auto nameSpaceDir = toDasherizedCase(ns);
+		auto nameSpaceDir = generatorUtils::toDasherizedCase(ns);
 
 		for (const auto& type : dependentTypes)
-			processor(std::string("{ ") + type + ", " + type + "T }", std::string("./") + nameSpaceDir + "/" + toDasherizedCase(type));
+			processor(
+				std::string("{ ") + type + ", " + type + "T }", 
+				std::string("./") + nameSpaceDir + "/" + generatorUtils::toDasherizedCase(type));
 	}
 }
