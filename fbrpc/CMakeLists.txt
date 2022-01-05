@@ -18,13 +18,15 @@ if(USE_VCPKG)
     target_include_directories(libfbrpc PUBLIC ${UVW_INCLUDE_DIR})
     target_link_libraries(libfbrpc PRIVATE unofficial::libuv::libuv flatbuffers::flatbuffers)
 else()
-    target_include_directories(libfbrpc PUBLIC ${UVW_INCLUDE_DIR} ${UV_INCLUDE_DIR} ${FLATBUFFER_DIR}/include)
-    if(PLATFORM_WIN64)
-        target_link_libraries(libfbrpc 
-            debug ${FLATBUFFER_DIR}/lib/windows/debug/flatbuffers.lib 
-            optimized ${FLATBUFFER_DIR}/lib/release/debug/flatbuffers.lib
-        )
-    endif()
+    target_include_directories(libfbrpc PUBLIC ${UVW_INCLUDE_DIR} ${UV_DIR}/include ${FLATBUFFER_DIR}/include)
+    set(FLATBUFFER_SOURCE_FILES
+        ${FLATBUFFER_DIR}/src/idl_gen_text.cpp
+        ${FLATBUFFER_DIR}/src/idl_parser.cpp
+        ${FLATBUFFER_DIR}/src/reflection.cpp
+        ${FLATBUFFER_DIR}/src/util.cpp
+    )
+    target_sources(libfbrpc PRIVATE ${LIB_SOURCE_FILES} ${FLATBUFFER_SOURCE_FILES})
+    target_link_libraries(libfbrpc PRIVATE uv)
 endif()
 
 target_include_directories(libfbrpc PRIVATE ${FBRPC_ROOT})

@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.16)
 if(USE_VCPKG)
     find_path(FLAT_BUFFER_PATH flatbuffers/flatbuffers.h NO_CACHE)
     set(FLATC_PATH "${FLAT_BUFFER_PATH}/../tools/flatbuffers/flatc")
+else()
+    set(FLATC_PATH ${FLATBUFFERS_FLATC_EXECUTABLE})
 endif()
 
 set(PROTO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/proto)
