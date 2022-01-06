@@ -38,9 +38,11 @@ namespace fbrpc
 		template <class ... Args>
 		void error(Args&& ... args) { m_sink->error((... + (toString(std::forward<Args>(args)) + " "))); }
 
+		void setSink(std::unique_ptr<sLoggerSink> sink) { m_sink = std::move(sink); }
+
 	private:
 		sLogger() : m_sink(std::make_unique<sLoggerSink>()) {}
-		void setSink(std::unique_ptr<sLoggerSink> sink) { m_sink = std::move(sink); }
+
 		std::string toString(const char* msg) { return msg; }
 		std::string toString(int msg) { return std::to_string(msg); }
 		std::string toString(std::string msg) { return msg; }

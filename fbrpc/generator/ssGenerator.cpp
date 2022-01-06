@@ -101,8 +101,8 @@ namespace fbrpc
 		const auto& services = parser.services_.vec;
 		if (services.size() == 0)
 		{
-			logger().error("no service found");
-			return false;
+			logger().info("no service found, ignore");
+			return true;
 		}
 
 		if (services.size() > 1)

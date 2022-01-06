@@ -73,7 +73,7 @@ namespace fbrpc
 				auto requestName = call->request->name;
 				auto responseName = call->response->name;
 
-				if (generatorUtils::isEvent(responseName))
+				if (generatorUtils::isEvent(call->response))
 				{
 					printer.addContent("static " + api + "(filter: " + requestName + "T, callback: (event: " + responseName + R"#(T) => void) {
     let builder = new flatbuffers.Builder();

@@ -7,6 +7,7 @@
 #include <type_traits>
 
 #include "core/ssCommon.h"
+#include "core/ssLogger.h"
 #include "core/ssError.h"
 #include "core/ssEmitter.h"
 #include "core/ssBuffer.h"

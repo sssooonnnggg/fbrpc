@@ -21,7 +21,9 @@ table EventDataFilter {
 	min: int32;
 }
 
-table ObjectCreateEvent {
+attribute "event";
+
+table ObjectCreateEvent (event) {
 	data: int32;
 }
 

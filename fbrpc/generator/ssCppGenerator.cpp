@@ -45,7 +45,7 @@ namespace fbrpc
 					auto requestName = call->request->name;
 					auto responseName = call->response->name;
 
-					if (generatorUtils::isEvent(responseName))
+					if (generatorUtils::isEvent(call->response))
 						printer.addContent("virtual void " + apiName + "(const " + requestName + "* filter, std::unique_ptr<sEventEmitter<"
 							+ responseName + ">> emitter) = 0; ");
 					else

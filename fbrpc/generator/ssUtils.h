@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include "flatbuffers/idl.h"
 
 namespace fbrpc::generatorUtils
 {
@@ -23,8 +24,9 @@ namespace fbrpc::generatorUtils
 		return result;
 	};
 
-	inline bool isEvent(const std::string& responseName)
+	inline bool isEvent(flatbuffers::StructDef* table)
 	{
-		return responseName.find("Event") != std::string::npos;
+		auto&& attributes = table->attributes.dict;
+		return attributes.find("event") != attributes.end();
 	}
 }
