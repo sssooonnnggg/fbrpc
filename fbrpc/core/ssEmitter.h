@@ -59,6 +59,11 @@ namespace fbrpc
                     ctx.listener(event);
             }
 
+            void clear()
+            {
+                m_listeners.clear();
+            }
+
         private:
             sSlot createSlot() { return sSlot{ ++m_slotId }; }
 
@@ -73,6 +78,14 @@ namespace fbrpc
             return handler<Event>().on(std::move(listener));
         }
 
+        template <class Event>
+        sSlot rebind(sListener<Event> listener)
+        {
+            handler<Event>().clear();
+            return handler<Event>().on(std::move(listener));
+        }
+
+        template <class Event>
         void off(const sSlot& slot)
         {
             handler<Event>().off(slot);

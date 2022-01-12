@@ -19,7 +19,7 @@ namespace fbrpc
 	public:
 		virtual void init() = 0;
 		virtual std::string name() const = 0;
-		std::size_t hash();
+		virtual std::size_t hash() const = 0;
 
 		using sResponder = sUniqueFunction<void(sBuffer)>;
 		void processBuffer(sBufferView buffer, sResponder responder);

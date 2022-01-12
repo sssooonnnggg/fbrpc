@@ -149,12 +149,14 @@ namespace fbrpc
 	void sFlatBufferRpcClient::processClose(const sCloseEvent& close)
 	{
 		logger().error("client close");
+		m_connected = false;
 		emit(close);
 	}
 
 	void sFlatBufferRpcClient::processEnd(const sEndEvent& end)
 	{
 		logger().error("client end");
+		m_connected = false;
 		emit(end);
 	}
 

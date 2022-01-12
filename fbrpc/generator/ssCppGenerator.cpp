@@ -36,6 +36,7 @@ namespace fbrpc
 				auto className = serviceName + "Service";
 				auto classScope = printer.addClass(className, "sService");
 				printer.addClassAccessSpecifier("public:");
+				printer.addContent("std::size_t hash() const override { static auto nameHash = getHash(name()); return nameHash; }");
 				printer.addContent(
 					std::string("std::string name() const override { return \"") + className + "\"; }");
 

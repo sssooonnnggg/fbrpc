@@ -43,7 +43,8 @@ namespace fbrpc
 
 			std::vector<flatbuffers::ServiceDef*> services;
 			for (auto&& parser : m_parsers)
-				services.push_back(parser->services_.vec[0]);
+				if (parser->services_.vec.size() > 0)
+					services.push_back(parser->services_.vec[0]);
 
 			auto generator = createLanguageGenerator();
 			return generator->finish(std::move(services));
@@ -94,14 +95,14 @@ namespace fbrpc
 		flatbuffers::Parser& parser = *addParser();
 		if (!parser.Parse(&buffer[0] + offset, &includePath[0], sourceName.c_str()))
 		{
-			logger().error("parse proto file failed", parser.error_);
+			logger().error("parse proto file failed", sourceName, parser.error_);
 			return false;
 		}
 
 		const auto& services = parser.services_.vec;
 		if (services.size() == 0)
 		{
-			logger().info("no service found, ignore");
+			logger().info("no service found, ignore", sourceName);
 			return true;
 		}
 
@@ -153,6 +154,9 @@ namespace fbrpc
 	bool sGenerator::writeFile(std::string content, std::string name)
 	{
 		std::filesystem::path outputPath(m_outputDirPath);
+		if (!std::filesystem::exists(outputPath))
+			std::filesystem::create_directory(outputPath);
+
 		outputPath /= name;
 
 		std::ofstream file(outputPath.string(), std::ios_base::binary);

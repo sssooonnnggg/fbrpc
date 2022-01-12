@@ -17,13 +17,6 @@ namespace fbrpc
 			std::string_view name;
 			std::string_view decl;
 		};
-		constexpr std::array<sGlobalFunction, 1> GlobalFunctions = 
-		{ {
-			{
-				"connect",
-				"export function connect(option: { address: string, port: number }): Promise<{result:boolean, message:string}>"
-			}
-		} };
 	}
 
 	bool sTSGenerator::start(flatbuffers::ServiceDef* service)
@@ -110,9 +103,6 @@ namespace fbrpc
 		sTSPrinter printer;
 		printer.addHeader();
 
-		for (auto globalFunction : GlobalFunctions)
-			printer.addContent(globalFunction.decl);
-
 		for (auto service : services)
 			printer.addContent(std::string("export { ") + service->name + " } from './" + service->name + "'");
 
@@ -124,9 +114,6 @@ namespace fbrpc
 		sTSPrinter printer;
 		printer.addHeader();
 
-		for (auto globalFunction : GlobalFunctions)
-			printer.addContent(std::string("export { ") + globalFunction.name.data() + " } from './" + BindingTargetName.data() + "'");
-
 		for (auto service : services)
 			exportDependentTypes(printer, service);
 
@@ -134,6 +121,8 @@ namespace fbrpc
 
 		for (auto service : services)
 			printer.addContent(std::string("export { ") + service->name + "API } from './" + service->name + "API'");
+
+		printer.addContent("export * from './internal'");
 
 		return writter()(printer.getOutput(), "FlatBufferAPI.ts");
 	}

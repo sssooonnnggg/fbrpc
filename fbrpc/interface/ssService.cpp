@@ -4,12 +4,6 @@
 
 namespace fbrpc
 {
-	std::size_t sService::hash()
-	{
-		static auto nameHash = getHash(name());
-		return nameHash;
-	}
-
 	void sService::processBuffer(sBufferView buffer, sResponder responder)
 	{
 		auto apiHash = buffer.read<std::size_t>();
