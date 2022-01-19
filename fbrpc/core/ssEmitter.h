@@ -81,7 +81,7 @@ namespace fbrpc
         template <class Event>
         sSlot rebind(sListener<Event> listener)
         {
-            handler<Event>().clear();
+            clear<Event>();
             return handler<Event>().on(std::move(listener));
         }
 
@@ -89,6 +89,12 @@ namespace fbrpc
         void off(const sSlot& slot)
         {
             handler<Event>().off(slot);
+        }
+
+        template <class Event>
+        void clear()
+        {
+            handler<Event>().clear();
         }
 
     protected:

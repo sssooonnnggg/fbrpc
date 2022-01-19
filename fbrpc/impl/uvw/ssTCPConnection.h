@@ -15,7 +15,7 @@ namespace fbrpc::uvwDetail
 		sTCPConnection(std::shared_ptr<uvw::TCPHandle> handle);
 		~sTCPConnection();
 
-		void init();
+		void initDefaultEventHandler();
 
 		void send(std::unique_ptr<char[]> data, std::size_t length) override;
 		void close() override;

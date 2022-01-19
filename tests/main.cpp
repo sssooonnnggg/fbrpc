@@ -65,6 +65,18 @@ public:
         );
     }
 
+    void testUnion(const GetUnionRequest* request, std::unique_ptr<sPromise<GetUnionResponse>> response)
+    {
+        auto& fbb = response->builder();
+        std::vector<std::string> stringVector = { "a", "b", "c" };
+        auto temp = fbb.CreateVectorOfStrings(stringVector);
+        auto result = CreateStringVector(fbb, temp).Union();
+        GetUnionResponseBuilder builder(fbb);
+        builder.add_data_type(UnionData::UnionData_StringVector);
+        builder.add_data(result);
+        response->resolve(builder.Finish());
+    }
+
 private:
     std::unique_ptr<sTimer> m_delayAddTimer;
     std::unique_ptr<sPromise<DelayAddResponse>> m_delayAdd;
@@ -131,6 +143,17 @@ int main(int argc, const char** argv)
                     [](const ObjectCreateEvent* e)
                     {
                         logger().info("[client] [<==] receive ObjectCreateEvent, data:", e->data());
+                    }
+                );
+
+                logger().info("[client] [==>] test get union");
+                sharedStub->testUnion(CreateGetUnionRequest(sharedStub->builder()),
+                    [](const GetUnionResponse* res)
+                    {
+                        auto vec = res->data_as_StringVector();
+                        auto strings = vec->strings();
+                        for (int i = 0; i < strings->size(); ++i)
+                            logger().info("[client] [<==] test get union", strings->Get(i)->str());
                     }
                 );
 

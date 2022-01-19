@@ -11,10 +11,11 @@ namespace fbrpc::uvwDetail
 
 	sTCPConnection::~sTCPConnection()
 	{
+		m_handle->clear();
 		m_handle->close();
 	}
 
-	void sTCPConnection::init()
+	void sTCPConnection::initDefaultEventHandler()
 	{
 		m_handle->on<uvw::ErrorEvent>([this](const uvw::ErrorEvent& e, uvw::TCPHandle& handle) { emit(sError{ e.code(), e.what() }); });
 		m_handle->on<uvw::CloseEvent>([this](const uvw::CloseEvent&, uvw::TCPHandle&) { m_handle->close(); emit(sCloseEvent{}); });

@@ -17,7 +17,10 @@ namespace fbrpc::uvwDetail
     sTCPServer::~sTCPServer()
     {
         if (m_handle)
+        {
+            m_handle->clear();
             m_handle->close();
+        }
     }
 
     void sTCPServer::bind(std::string_view address, unsigned int port)
@@ -35,7 +38,7 @@ namespace fbrpc::uvwDetail
 
             addClient(client);
 
-            client->init();
+            client->initDefaultEventHandler();
             handle.accept(*clientHandle);
 
             clientHandle->read();

@@ -27,8 +27,28 @@ table ObjectCreateEvent (event) {
 	data: int32;
 }
 
+table GetUnionRequest {}
+
+table StringVector {
+	strings: [string];
+}
+
+table Node {
+	name: string;
+}
+
+table ObjectVector {
+	objects: [Node];
+}
+
+union UnionData { StringVector, ObjectVector}
+table GetUnionResponse {
+	data: UnionData;
+}
+
 rpc_service Example {
 	helloWorld(HelloWorldRequest): HelloWorldResponse;
 	delayAdd(DelayAddRequest): DelayAddResponse;
 	subscribeObjectCreateEvent(EventDataFilter): ObjectCreateEvent;
+	testUnion(GetUnionRequest): GetUnionResponse;
 }

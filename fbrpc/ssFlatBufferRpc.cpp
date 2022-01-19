@@ -130,13 +130,15 @@ namespace fbrpc
 	sFlatBufferRpcClient::sFlatBufferRpcClient(std::unique_ptr<sClient> client)
 		: m_client(std::move(client))
 	{
-
+		m_client->on<sError>([this](const sError& e) { processError(e); });
+		m_client->on<sConnectionEvent>([this](const sConnectionEvent& connection) { processConnection(connection); });
+		m_client->on<sEndEvent>([this](const sEndEvent& e) { processEnd(e); });
+		m_client->on<sCloseEvent>([this](const sCloseEvent& e) { processClose(e); });
+		m_client->on<sDataEvent>([this](const sDataEvent& e) { processBuffer(sBufferView{ e.data, e.length }); });
 	}
 
 	void sFlatBufferRpcClient::connect()
 	{
-		m_client->on<sError>([this](const sError& e) { processError(e); });
-		m_client->on<sConnectionEvent>([this](const sConnectionEvent& connection) { processConnection(connection); });
 		m_client->connect();
 	}
 
@@ -164,15 +166,7 @@ namespace fbrpc
 	{
 		logger().info("connected");
 		m_connection = e.connection.lock();
-
-		m_connection->on<sError>([this](const sError& e) { processError(e); });
-		m_connection->on<sEndEvent>([this](const sEndEvent& e) { processEnd(e); });
-		m_connection->on<sCloseEvent>([this](const sCloseEvent& e) { processClose(e); });
-
-		m_connection->on<sDataEvent>([this](const sDataEvent& e) { processBuffer(sBufferView{ e.data, e.length }); });
-
 		m_connected = true;
-
 		emit(e);
 	}
 
