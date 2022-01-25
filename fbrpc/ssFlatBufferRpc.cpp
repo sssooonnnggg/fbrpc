@@ -191,8 +191,11 @@ namespace fbrpc
 			auto it = m_responseMap.find(requestId);
 			if (it != m_responseMap.end())
 			{
-				auto& responseHandler = it->second;
+				auto& responseHandler = it->second.onResponse;
 				responseHandler(m_buffer.view(ePackageOffset::kFlatBuffer));
+
+				if (!it->second.repeat)
+					m_responseMap.erase(it);
 			}
 			else
 			{
@@ -204,10 +207,10 @@ namespace fbrpc
 		}
 	}
 
-	void sFlatBufferRpcClient::call(std::size_t service, std::size_t api, sBuffer buffer, sOnResponse onResponse)
+	void sFlatBufferRpcClient::call(std::size_t service, std::size_t api, sBuffer buffer, sOnResponse onResponse, bool repeat)
 	{
 		auto requestId = generateRequestId();
-		m_responseMap[requestId] = std::move(onResponse);
+		m_responseMap[requestId] = { std::move(onResponse), repeat };
 
 		sBuffer package = sPackageWritter().write(requestId).write(service).write(api).write(std::move(buffer)).getBuffer();
 		m_connection->send(std::move(package.data), package.length);

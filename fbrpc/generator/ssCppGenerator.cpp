@@ -36,6 +36,7 @@ namespace fbrpc
 				auto className = serviceName + "Service";
 				auto classScope = printer.addClass(className, "sService");
 				printer.addClassAccessSpecifier("public:");
+				printer.addContent("static std::size_t typeHash() { static auto nameHash = getHash(\"" + className + "\"); return nameHash; }");
 				printer.addContent("std::size_t hash() const override { static auto nameHash = getHash(name()); return nameHash; }");
 				printer.addContent(
 					std::string("std::string name() const override { return \"") + className + "\"; }");
@@ -122,6 +123,8 @@ addApiWrapper(getHash(")#" + apiName + R"#("), [this](sBufferView buffer, sRespo
 					auto requestName = call->request->name;
 					auto responseName = call->response->name;
 
+					bool repeat = generatorUtils::isEvent(call->response);
+
 					printer.nextLine();
 					printer.addContent(
 						std::string("using ") + responseName + "Handler = std::function<void(const " + responseName + "*)>;");
@@ -138,7 +141,7 @@ call(serviceHash(), apiHash, sBuffer::clone(builder()), [handler](sBufferView bu
 		auto* response = flatbuffers::GetRoot<)#" + responseName + R"#(>(buffer.data);
 		handler(response);
 	}
-);
+, )#" + (repeat ? "true" : "false") + R"#();
 builder().Clear();)#");
 				}
 			}

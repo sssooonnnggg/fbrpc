@@ -32,8 +32,17 @@ namespace fbrpc
 		static std::unique_ptr<sFlatBufferRpcServer> create(sTCPOption option);
 
 		void installService(std::unique_ptr<sService> service);
+
 		template<class T, typename = std::enable_if_t<std::is_base_of_v<sService, T>>>
 		void installService() { installService(std::make_unique<T>()); }
+
+		template<class T, typename = std::enable_if_t<std::is_base_of_v<sService, T>>>
+		T* getService()
+		{
+			auto it = m_services.find(T::typeHash());
+			return it == m_services.end() ? nullptr : static_cast<T*>(it->second.get());
+		}
+
 		void start();
 
 		virtual void update() = 0;
@@ -78,7 +87,7 @@ namespace fbrpc
 		}
 
 		using sOnResponse = std::function<void(sBufferView)>;
-		void call(std::size_t service, std::size_t api, sBuffer buffer, sOnResponse onResponse);
+		void call(std::size_t service, std::size_t api, sBuffer buffer, sOnResponse onResponse, bool repeat = false);
 
 	protected:
 		sFlatBufferRpcClient(std::unique_ptr<sClient> client);
@@ -107,7 +116,13 @@ namespace fbrpc
 		std::unique_ptr<sClient> m_client;
 		std::shared_ptr<sConnection> m_connection;
 		sBuffer m_buffer;
-		std::unordered_map<std::size_t, sOnResponse> m_responseMap;
+
+		struct sResponseInfo
+		{
+			sOnResponse onResponse;
+			bool repeat;
+		};
+		std::unordered_map<std::size_t, sResponseInfo> m_responseMap;
 		bool m_connected = false;
 		std::vector<std::shared_ptr<sStub>> m_stubs;
 	};

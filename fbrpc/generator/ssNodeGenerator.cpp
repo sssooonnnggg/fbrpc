@@ -3,6 +3,8 @@
 #include "ssCppPrinter.h"
 #include "ssNodeGenerator.h"
 
+#include "ssUtils.h"
+
 namespace fbrpc
 {
 	bool sNodeGenerator::start(flatbuffers::ServiceDef* service)
@@ -41,7 +43,7 @@ namespace fbrpc
 				for (auto call : service->calls.vec)
 				{
 					auto apiName = call->name;
-
+					bool repeat = generatorUtils::isEvent(call->response);
 					printer.addContent(R"#(static void )#" + apiName + R"#((fbrpc::sBuffer buffer, std::function<void(fbrpc::sBuffer)> callback)
 {
 	static std::size_t apiHash = fbrpc::getHash(")#" + apiName + R"#(");
@@ -50,7 +52,7 @@ namespace fbrpc
 		{
 			callback(fbrpc::sBuffer::clone(view.data, view.length));
 		}
-	);
+	, )#" + (repeat ? "true" : "false") + R"#();
 })#");
 				}
 
