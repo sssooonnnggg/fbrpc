@@ -66,9 +66,14 @@ namespace fbrpc
 				auto requestName = call->request->name;
 				auto responseName = call->response->name;
 
+				auto requestType = requestName + "T";
+				auto requestParams = "ConstructorParameters<typeof " + requestName + "T>";
+				bool isEmptyRequest = call->request->fields.vec.empty();
+
 				if (generatorUtils::isEvent(call->response))
 				{
-					printer.addContent("static " + api + "(filter: " + requestName + "T, callback: (event: " + responseName + R"#(T) => void) {
+					printer.addContent(
+"static " + api + "(filter: " + requestName + "T, callback: (event: " + responseName + R"#(T) => void) {
     let builder = new flatbuffers.Builder();
     builder.finish(filter.pack(builder));
     )#" + serviceName + "." + api + R"#((builder.asUint8Array(), res => {
@@ -80,9 +85,18 @@ namespace fbrpc
 				}
 				else
 				{
-					printer.addContent("static " + api + "(req: " + requestName + "T): Promise<" + responseName + R"#(T> {
+					std::string directCall = "static " + api + "(req: " + requestType + "): Promise<" + responseName + "T>;";
+					std::string flatCall = "static " + api + "(...args: " + requestParams + "): Promise<" + responseName + "T>;";
+
+					// generate overload functions
+					printer.addContent(directCall);
+					printer.addContent(flatCall);
+
+					printer.addContent(
+"static " + api + "(...args: any[]): Promise<" + responseName + R"#(T> {
     return new Promise(resolve => {
         let builder = new flatbuffers.Builder();
+        let req = args[0] instanceof )#" + requestType + " ? args[0] : new " + requestType + (isEmptyRequest ? "()" : "(...args)") + R"#(;
         builder.finish(req.pack(builder));
         )#" + serviceName + "." + api + R"#((builder.asUint8Array(), res => {
             let buffer = new flatbuffers.ByteBuffer(res);

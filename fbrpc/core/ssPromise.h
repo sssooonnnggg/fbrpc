@@ -49,7 +49,7 @@ namespace fbrpc
 		}
 
 		template<class F, class ... Args>
-		std::enable_if_t<std::is_invocable_v<F, flatbuffers::FlatBufferBuilder&, Args...>>
+		std::enable_if_t<std::is_invocable_v<F, flatbuffers::FlatBufferBuilder&, CppToFlatBufferResult<Args>...>>
 			emit(F&& fn, Args&& ... args)
 		{
 			resolve(std::forward<F>(fn), std::forward<Args>(args)...);
