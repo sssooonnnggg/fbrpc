@@ -35,7 +35,9 @@ namespace fbrpc
 		virtual void addHeader();
 
 		void nextLine(std::size_t lineCount = 1);
-		void addContent(std::string_view line);
+
+		using sVarsMap = std::unordered_map<std::string_view, std::string_view>;
+		void addContent(std::string_view lines, sVarsMap vars = {});
 
 		virtual std::unique_ptr<sScope> addScope() = 0;
 		std::string getOutput();
@@ -43,7 +45,7 @@ namespace fbrpc
 	protected:
 		friend class sScope;
 
-		void addSingleLine(std::string_view line);
+		void addSingleLine(std::string_view line, sVarsMap vars = {});
 
 		std::size_t indent() const;
 		void setIndent(std::size_t indent);

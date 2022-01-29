@@ -42,30 +42,40 @@ namespace fbrpc
 
 				for (auto call : service->calls.vec)
 				{
-					auto apiName = call->name;
-					bool repeat = generatorUtils::isEvent(call->response);
-					printer.addContent(R"#(static void )#" + apiName + R"#((fbrpc::sBuffer buffer, std::function<void(fbrpc::sBuffer)> callback)
+					sPrinter::sVarsMap vars = {
+						{"apiName", call->name},
+						{"repeat", generatorUtils::isEvent(call->response) ? "true" : "false"}
+					};
+
+					printer.addContent(
+R"#(static void $apiName$(fbrpc::sBuffer buffer, std::function<void(fbrpc::sBuffer)> callback)
 {
-	static std::size_t apiHash = fbrpc::getHash(")#" + apiName + R"#(");
+	static std::size_t apiHash = fbrpc::getHash("$apiName$");
 	auto client = FlatbufferClient::get();
 	client->call(serviceHash(), apiHash, std::move(buffer), [callback](fbrpc::sBufferView view)
 		{
 			callback(fbrpc::sBuffer::clone(view.data, view.length));
 		}
-	, )#" + (repeat ? "true" : "false") + R"#();
-})#");
+	, $repeat$);
+})#", vars);
 				}
 
 				printer.addContent("static BindingHelper& bind(BindingHelper& helper)");
 
 				{
+					sPrinter::sVarsMap vars = {
+						{"serviceName", serviceName}
+					};
 					auto scope = printer.addScope();
-					printer.addContent("return helper.begin(\"" + serviceName + "\")");
+					printer.addContent("return helper.begin(\"$serviceName$\")", vars);
 					{
 						for (auto call : service->calls.vec)
+						{
+							vars["api"] = call->name;
 							printer.addContent(
-								"    .addStaticFunction<" + serviceName + "::" + call->name + ">(\"" + call->name + "\")"
+								"    .addStaticFunction<$serviceName$::$api$>(\"$api$\")", vars
 							);
+						}
 						printer.addContent(".end();");
 					}
 				}

@@ -21,6 +21,7 @@ namespace fbrpc::uvwDetail
 	void sTCPFlatBufferRpcServer::update()
 	{
 		sUvLoop::getUvLoop()->run<uvw::Loop::Mode::NOWAIT>();
+		sFlatBufferRpcServer::update();
 	}
 
 	std::unique_ptr<sFlatBufferRpcClient> sTCPFlatBufferRpcClient::create(sTCPOption option)

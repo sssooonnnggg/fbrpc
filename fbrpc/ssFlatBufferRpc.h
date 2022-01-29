@@ -43,12 +43,17 @@ namespace fbrpc
 			return it == m_services.end() ? nullptr : static_cast<T*>(it->second.get());
 		}
 
-		void start();
 
-		virtual void update() = 0;
+		void start();
+		virtual void update();
 
 	protected:
 		sFlatBufferRpcServer(std::unique_ptr<sServer> server);
+		const std::unordered_map<std::size_t, std::unique_ptr<sService>>& getServices() const
+		{
+			return m_services;
+		}
+
 	private:
 		void processServerError(const sError& error);
 		void processClientError(int clientId, const sError& error);
@@ -63,7 +68,8 @@ namespace fbrpc
 		std::unique_ptr<sServer> m_server;
 		std::weak_ptr<sConnection> m_client;
 		std::unordered_map<std::size_t, std::unique_ptr<sService>> m_services;
-		sBuffer m_buffer;
+		sBuffer m_received;
+		sBuffer m_pending;
 	};
 
 	class sFlatBufferRpcClient : public sEmitter<sFlatBufferRpcClient>

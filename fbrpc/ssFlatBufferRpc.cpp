@@ -73,16 +73,16 @@ namespace fbrpc
 
 	void sFlatBufferRpcServer::processBuffer(sBufferView buffer)
 	{
-		m_buffer.append(buffer.data, buffer.length);
+		m_received.append(buffer.data, buffer.length);
 		processNextPackage();
 	}
 
 	void sFlatBufferRpcServer::processNextPackage()
 	{
-		if (m_buffer.empty())
+		if (m_received.empty())
 			return;
 
-		sPackageReader reader(m_buffer.view());
+		sPackageReader reader(m_received.view());
 
 		if (reader.ready())
 		{
@@ -94,7 +94,7 @@ namespace fbrpc
 			{
 				auto& service = it->second;
 
-				sBuffer header = sBuffer::clone(m_buffer, ePackageOffset::kRequestId, ePackageOffset::kFlatBuffer - ePackageOffset::kRequestId);
+				sBuffer header = sBuffer::clone(m_received, ePackageOffset::kRequestId, ePackageOffset::kFlatBuffer - ePackageOffset::kRequestId);
 
 				auto responder = [this, packageHeader = std::move(header)](sBuffer response)
 				{
@@ -102,22 +102,33 @@ namespace fbrpc
 					sendResponse(std::move(package));
 				};
 
-				service->processBuffer(m_buffer.view(ePackageOffset::kApiHash), std::move(responder));
+				service->processBuffer(m_received.view(ePackageOffset::kApiHash), std::move(responder));
 			}
 			else
 			{
 				logger().error("unknown service", serviceHash);
 			}
 
-			m_buffer.consume(packageSize);
+			m_received.consume(packageSize);
 			processNextPackage();
 		}
 	}
 
 	void sFlatBufferRpcServer::sendResponse(sBuffer response)
 	{
+		m_pending.append(response);
+	}
+	
+	void sFlatBufferRpcServer::update()
+	{
+		for (const auto& [_, service] : getServices())
+			service->update();
+
 		if (auto client = m_client.lock())
-			client->send(std::move(response.data), response.length);
+		{
+			client->send(std::move(m_pending.data), m_pending.length);
+			m_pending.clear();
+		}
 	}
 
 	////////////////////////////////////////////////////////////////////////////////

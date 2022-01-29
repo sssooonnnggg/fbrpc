@@ -119,6 +119,7 @@ namespace fbrpc
 		}
 
 		bool empty() const { return length == 0; }
+		void clear() { data.reset(); length = 0; }
 
 		std::unique_ptr<char[]> data;
 		std::size_t length = 0;

@@ -24,6 +24,8 @@ namespace fbrpc
 		using sResponder = sUniqueFunction<void(sBuffer)>;
 		void processBuffer(sBufferView buffer, sResponder responder);
 		
+		virtual void update() {};
+
 	protected:
 
 		template <class T> std::unique_ptr<sPromise<T>> createPromise() { return std::unique_ptr<sPromise<T>>(new sPromise<T>()); }

@@ -46,7 +46,7 @@ namespace fbrpc
 		std::string toString(const char* msg) { return msg; }
 		std::string toString(int msg) { return std::to_string(msg); }
 		std::string toString(std::string msg) { return msg; }
-		std::string toString(std::string_view msg) { return msg.data(); }
+		std::string toString(std::string_view msg) { return std::string(msg); }
 	private:
 		std::unique_ptr<sLoggerSink> m_sink;
 	};

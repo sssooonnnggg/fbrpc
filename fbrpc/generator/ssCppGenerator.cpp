@@ -61,23 +61,25 @@ namespace fbrpc
 					auto fucntion = printer.addScope();
 					for (auto call : service->calls.vec)
 					{
-						auto apiName = call->name;
-						auto requestName = call->request->name;
-						auto responseName = call->response->name;
+						sPrinter::sVarsMap vars = {
+							{"apiName", call->name},
+							{"requestName", call->request->name},
+							{"responseName", call->response->name}
+						};
 
 						printer.addContent(R"#(
-addApiWrapper(getHash(")#" + apiName + R"#("), [this](sBufferView buffer, sResponder responder)
+addApiWrapper(getHash("$apiName$"), [this](sBufferView buffer, sResponder responder)
 	{
-		auto* request = flatbuffers::GetRoot<)#" + requestName + R"#(>(reinterpret_cast<const void*>(buffer.data));
-		auto promise = createPromise<)#" + responseName + R"#(>();
+		auto* request = flatbuffers::GetRoot<$requestName$>(reinterpret_cast<const void*>(buffer.data));
+		auto promise = createPromise<$responseName$>();
 		sUniqueFunction<void()> sendResponse = [capturedPromise = promise.get(), capturedResponder = std::move(responder)]() mutable
 		{
 			capturedResponder(sBuffer::clone(capturedPromise->builder()));
 		};
 		promise->bind(std::move(sendResponse));
-		)#" + apiName + R"#((request, std::move(promise));
+		$apiName$(request, std::move(promise));
 	}
-);)#");
+);)#", vars);
 					}
 				}
 			}
@@ -134,15 +136,22 @@ addApiWrapper(getHash(")#" + apiName + R"#("), [this](sBufferView buffer, sRespo
 					);
 
 					auto functionScope = printer.addScope();
-					printer.addContent(R"#(static auto apiHash = getHash(")#" + apiName + R"#(");
+
+					sPrinter::sVarsMap vars = {
+						{"apiName", apiName},
+						{"responseName", responseName},
+						{"repeat", repeat ? "true" : "false"}
+					};
+
+					printer.addContent(R"#(static auto apiHash = getHash("$apiName$");
 builder().Finish(request);
 call(serviceHash(), apiHash, sBuffer::clone(builder()), [handler](sBufferView buffer)
 	{
-		auto* response = flatbuffers::GetRoot<)#" + responseName + R"#(>(buffer.data);
+		auto* response = flatbuffers::GetRoot<$responseName$>(buffer.data);
 		handler(response);
 	}
-, )#" + (repeat ? "true" : "false") + R"#();
-builder().Clear();)#");
+, $repeat$);
+builder().Clear();)#", vars);
 				}
 			}
 		}

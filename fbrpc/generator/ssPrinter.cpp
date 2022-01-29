@@ -1,6 +1,7 @@
 #include <cassert>
 
 #include "ssPrinter.h"
+#include "fbrpc/core/ssLogger.h"
 
 namespace
 {
@@ -41,22 +42,22 @@ namespace fbrpc
 			m_output = m_output + config().lineEndings;
 	}
 
-	void sPrinter::addContent(std::string_view line)
+	void sPrinter::addContent(std::string_view lines, sVarsMap vars)
 	{
 		auto lineEndings = config().lineEndings;
 		std::size_t offset = 0;
 		do 
 		{
 			auto prev = offset;
-			offset = line.find_first_of(lineEndings, offset);
+			offset = lines.find_first_of(lineEndings, offset);
 			if (offset == prev)
 			{
 				addSingleLine("");
 			}
 			else
 			{
-				auto singleLine = line.substr(prev, offset == std::string::npos ? std::string::npos : (offset - prev));
-				addSingleLine(singleLine);
+				auto singleLine = lines.substr(prev, offset == std::string::npos ? std::string::npos : (offset - prev));
+				addSingleLine(singleLine, vars);
 			}
 			
 			if (offset != std::string::npos)
@@ -65,9 +66,39 @@ namespace fbrpc
 		} while (offset != std::string::npos);
 	}
 
-	void sPrinter::addSingleLine(std::string_view singleLine)
+	void sPrinter::addSingleLine(std::string_view singleLine, sVarsMap vars)
 	{
-		m_output = m_output + std::string(m_indent, ' ') + std::string(singleLine) + config().lineEndings;
+		std::string output;
+		for (auto i = 0; i < singleLine.length();)
+		{
+			if (singleLine[i] == '$')
+			{
+				auto end = singleLine.find('$', i + 1);
+				if (end == std::string_view::npos)
+				{
+					logger().error("except $ for variable, but not found");
+					return;
+				}
+				std::string_view var = singleLine.substr(i + 1, end - (i + 1));
+				auto value = vars.find(var);
+				if (value == vars.end())
+				{
+					logger().error("can't find variable value for: ", var);
+					return;
+				}
+
+				output += std::string(value->second);
+				i = end + 1;
+			}
+			else
+			{
+				output += singleLine[i];
+				++i;
+			}
+
+		}
+
+		m_output = m_output + std::string(m_indent, ' ') + output + config().lineEndings;
 	}
 
 	std::size_t sPrinter::indent() const

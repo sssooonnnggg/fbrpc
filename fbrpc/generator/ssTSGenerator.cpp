@@ -39,7 +39,9 @@ namespace fbrpc
 		{
 			auto scope = printer.addExport(std::string("const ") + serviceName + ":");
 			for (auto call : service->calls.vec)
-				printer.addContent(call->name + ": (req: Uint8Array, callback: (res: Uint8Array) => void) => void");
+				printer.addContent(
+					"$apiName$: (req: Uint8Array, callback: (res: Uint8Array) => void) => void", 
+					{ {"apiName", call->name} });
 		}
 
 		return writter()(printer.getOutput(), serviceName + ".d.ts");
@@ -67,44 +69,52 @@ namespace fbrpc
 				auto responseName = call->response->name;
 
 				auto requestType = requestName + "T";
+				auto responseType = responseName + "T";
 				auto requestParams = "ConstructorParameters<typeof " + requestName + "T>";
 				bool isEmptyRequest = call->request->fields.vec.empty();
 
+				sPrinter::sVarsMap vars = {
+					{"api", api},
+					{"requestType", requestType},
+					{"responseType", responseType},
+					{"serviceName", serviceName},
+					{"responseName", responseName},
+					{"requestParams", requestParams}
+				};
+
 				if (generatorUtils::isEvent(call->response))
 				{
-					printer.addContent(
-"static " + api + "(filter: " + requestName + "T, callback: (event: " + responseName + R"#(T) => void) {
+					std::string_view content =
+R"#(static $api$(filter: $requestType$, callback: (event: $responseType$) => void) {
     let builder = new flatbuffers.Builder();
     builder.finish(filter.pack(builder));
-    )#" + serviceName + "." + api + R"#((builder.asUint8Array(), res => {
+    $serviceName$.$api$(builder.asUint8Array(), res => {
         let buffer = new flatbuffers.ByteBuffer(res);
-        let response = )#" + responseName + ".getRootAs" + responseName + R"#((buffer);
+        let response = $responseName$.getRootAs$responseName$(buffer);
         callback(response.unpack());
     });
-})#");
+})#";
+					printer.addContent(content, vars);
 				}
 				else
 				{
-					std::string directCall = "static " + api + "(req: " + requestType + "): Promise<" + responseName + "T>;";
-					std::string flatCall = "static " + api + "(...args: " + requestParams + "): Promise<" + responseName + "T>;";
-
-					// generate overload functions
-					printer.addContent(directCall);
-					printer.addContent(flatCall);
+					vars["args"] = isEmptyRequest ? "" : "...args";
 
 					printer.addContent(
-"static " + api + "(...args: any[]): Promise<" + responseName + R"#(T> {
+R"#(static $api$(req: $requestType$): Promise<$responseType$>;
+static $api$(...args: $requestParams$): Promise<$responseType$>;
+static $api$(...args: any[]): Promise<$responseType$> {
     return new Promise(resolve => {
         let builder = new flatbuffers.Builder();
-        let req = args[0] instanceof )#" + requestType + " ? args[0] : new " + requestType + (isEmptyRequest ? "()" : "(...args)") + R"#(;
+        let req = args[0] instanceof $requestType$ ? args[0] : new $requestType$($args$);
         builder.finish(req.pack(builder));
-        )#" + serviceName + "." + api + R"#((builder.asUint8Array(), res => {
+        $serviceName$.$api$(builder.asUint8Array(), res => {
             let buffer = new flatbuffers.ByteBuffer(res);
-            let response = )#" + responseName + ".getRootAs" + responseName + R"#((buffer);
+            let response = $responseName$.getRootAs$responseName$(buffer);
             resolve(response.unpack());
         });
     })
-})#");
+})#", vars);
 				}
 			}
 		}
