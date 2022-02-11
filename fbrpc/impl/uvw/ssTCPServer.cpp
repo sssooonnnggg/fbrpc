@@ -11,7 +11,10 @@ namespace fbrpc::uvwDetail
 {
     sTCPServer::sTCPServer()
     {
-        m_handle = sUvLoop::allocHandle([this](const uvw::ErrorEvent& e, uvw::TCPHandle& handle) { emit(sError{ e.code(), e.what() }); });
+        m_handle = sUvLoop::allocHandle([this](const uvw::ErrorEvent& e, uvw::TCPHandle& handle) 
+            { 
+                emit(sError{ e.code(), e.what() }); 
+            });
     }
 
     sTCPServer::~sTCPServer()
@@ -25,8 +28,8 @@ namespace fbrpc::uvwDetail
 
     void sTCPServer::bind(std::string_view address, unsigned int port)
     {
-        if (m_handle)
-            m_handle->bind(address.data(), port);
+        m_address = address;
+        m_port = port;
     }
 
     void sTCPServer::listen()
@@ -48,6 +51,7 @@ namespace fbrpc::uvwDetail
         if (m_handle)
         {
             m_handle->on<uvw::ListenEvent>(onConnection);
+            m_handle->bind(m_address, m_port);
             m_handle->listen();
         }
     }

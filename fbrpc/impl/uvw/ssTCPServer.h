@@ -19,5 +19,7 @@ namespace fbrpc::uvwDetail
         void listen() override;
     private:
         std::shared_ptr<uvw::TCPHandle> m_handle;
+        std::string m_address;
+        unsigned int m_port;
     };
 }

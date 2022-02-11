@@ -138,8 +138,9 @@ static $api$(...args: any[]): Promise<$responseType$> {
 		sTSPrinter printer;
 		printer.addHeader();
 
+		std::unordered_set<std::string> exportedTypes;
 		for (auto service : services)
-			exportDependentTypes(printer, service);
+			exportDependentTypes(printer, service, exportedTypes);
 
 		printer.nextLine();
 
@@ -160,11 +161,15 @@ static $api$(...args: any[]): Promise<$responseType$> {
 		);
 	}
 
-	void sTSGenerator::exportDependentTypes(sTSPrinter& printer, flatbuffers::ServiceDef* service)
+	void sTSGenerator::exportDependentTypes(sTSPrinter& printer, flatbuffers::ServiceDef* service, std::unordered_set<std::string>& exportedTypes)
 	{
-		foreachDependentType(printer, service, [&printer](auto&& targets, auto&& from)
+		foreachDependentType(printer, service, [&printer, &exportedTypes](auto&& targets, auto&& from)
 			{
-				printer.addContent(std::string("export ") + targets + " from '" + from + "'");
+				if (exportedTypes.find(targets) == exportedTypes.end())
+				{
+					printer.addContent(std::string("export ") + targets + " from '" + from + "'");
+					exportedTypes.insert(targets);
+				}
 			}
 		);
 	}
@@ -172,7 +177,7 @@ static $api$(...args: any[]): Promise<$responseType$> {
 	void sTSGenerator::foreachDependentType(
 		sTSPrinter& printer,
 		flatbuffers::ServiceDef* service,
-		std::function<void(const std::string types, const std::string& from)> processor
+		std::function<void(const std::string& types, const std::string& from)> processor
 	)
 	{
 		auto nameSpace = service->defined_namespace->components;

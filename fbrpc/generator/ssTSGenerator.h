@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <string>
+#include <unordered_set>
 
 #include "ssLanguageGenerator.h"
 
@@ -22,12 +23,12 @@ namespace fbrpc
 		bool finishTSWrapperFile(const std::vector<flatbuffers::ServiceDef*>& services);
 
 		void importDependentTypes(sTSPrinter& printer, flatbuffers::ServiceDef* service);
-		void exportDependentTypes(sTSPrinter& printer, flatbuffers::ServiceDef* service);
+		void exportDependentTypes(sTSPrinter& printer, flatbuffers::ServiceDef* service, std::unordered_set<std::string>& exportedTypes);
 
 		void foreachDependentType(
 			sTSPrinter& printer,
 			flatbuffers::ServiceDef* service,
-			std::function<void(const std::string types, const std::string& from)> processor
+			std::function<void(const std::string& types, const std::string& from)> processor
 		);
 	};
 }
