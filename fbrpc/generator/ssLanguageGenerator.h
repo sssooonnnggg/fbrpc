@@ -4,6 +4,7 @@
 
 namespace flatbuffers
 {
+	class Parser;
 	struct ServiceDef;
 }
 
@@ -20,7 +21,13 @@ namespace fbrpc
 		sWriteFileDelegate writter() { return m_writter; }
 
 		virtual bool start(flatbuffers::ServiceDef* service) = 0;
-		virtual bool finish(std::vector<flatbuffers::ServiceDef*> services) { return true; }
+
+		struct sContext
+		{
+			std::vector<flatbuffers::Parser*> parsers;
+			std::vector<flatbuffers::ServiceDef*> services;
+		};
+		virtual bool finish(sContext context) { return true; }
 	private:
 		sWriteFileDelegate m_writter;
 	};

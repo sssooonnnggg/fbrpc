@@ -2,9 +2,9 @@
 
 namespace fbrpc
 {
-	void sTSPrinter::addImport(std::string_view target, std::string_view from)
+	std::size_t sTSPrinter::addImport(std::string_view target, std::string_view from)
 	{
-		addContent(std::string("import ") + target.data() + " from '" + from.data() + "'");
+		return addContent(std::string("import ") + target.data() + " from '" + from.data() + "'");
 	}
 
 	std::unique_ptr<sPrinter::sScope> sTSPrinter::addExport(std::string_view target)

@@ -20,10 +20,10 @@ namespace fbrpc
 	{
 	public:
 		sGenerator(eLanguageType language);
-		bool start(std::string_view inputPath, std::string_view outputDirPath);
+		bool start(std::string_view inputPath, std::string_view outputDirPath, std::string_view includePath);
 	private:
 		flatbuffers::Parser* addParser();
-		bool generateForSingleProto(std::string_view protoFilePath, std::string_view outputDirPath);
+		bool generateForSingleProto(std::string_view protoFilePath, std::string_view outputDirPath, std::string_view includePath);
 		bool writeFile(std::string content, std::string name);
 		std::unique_ptr<sLanguageGenerator> createLanguageGenerator();
 	private:

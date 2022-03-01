@@ -25,7 +25,7 @@ namespace fbrpc
 
 	}
 
-	bool sGenerator::start(std::string_view inputPath, std::string_view outputDirPath)
+	bool sGenerator::start(std::string_view inputPath, std::string_view outputDirPath, std::string_view includePath)
 	{
 		m_outputDirPath = outputDirPath;
 
@@ -36,22 +36,26 @@ namespace fbrpc
 				std::filesystem::path protoFilePath = dirEntry.path();
 				if (!std::filesystem::is_directory(protoFilePath.string()))
 				{
-					if (!generateForSingleProto(protoFilePath.string(), outputDirPath))
+					if (!generateForSingleProto(protoFilePath.string(), outputDirPath, includePath))
 						return false;
 				}
 			}
 
 			std::vector<flatbuffers::ServiceDef*> services;
+			std::vector<flatbuffers::Parser*> parsers;
 			for (auto&& parser : m_parsers)
+			{
+				parsers.push_back(parser.get());
 				if (parser->services_.vec.size() > 0)
 					services.push_back(parser->services_.vec[0]);
+			}
 
 			auto generator = createLanguageGenerator();
-			return generator->finish(std::move(services));
+			return generator->finish({ std::move(parsers), std::move(services) });
 		}
 		else
 		{
-			return generateForSingleProto(inputPath, outputDirPath);
+			return generateForSingleProto(inputPath, outputDirPath, includePath);
 		}
 	}
 
@@ -62,7 +66,7 @@ namespace fbrpc
 		return parser;
 	}
 
-	bool sGenerator::generateForSingleProto(std::string_view protoFilePath, std::string_view outputDirPath)
+	bool sGenerator::generateForSingleProto(std::string_view protoFilePath, std::string_view outputDirPath, std::string_view includeP)
 	{
 		std::filesystem::path protoPath(protoFilePath);
 		if (!std::filesystem::exists(protoPath))
@@ -73,7 +77,7 @@ namespace fbrpc
 
 		std::string sourceName = protoPath.filename().string();
 		std::string parentPath = protoPath.parent_path().string();
-		std::vector<const char*> includePath = { parentPath.c_str(), nullptr };
+		std::vector<const char*> includePath = { parentPath.c_str(), includeP.data(), nullptr };
 
 		std::ifstream file(protoFilePath.data(), std::ios_base::binary | std::ios_base::in);
 		if (!file.is_open())

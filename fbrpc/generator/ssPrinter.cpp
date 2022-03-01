@@ -39,10 +39,10 @@ namespace fbrpc
 	void sPrinter::nextLine(std::size_t lineCount)
 	{
 		for (auto i = 0; i < lineCount; ++i)
-			m_output = m_output + config().lineEndings;
+			appendOrInsert(config().lineEndings);
 	}
 
-	void sPrinter::addContent(std::string_view lines, sVarsMap vars)
+	std::size_t sPrinter::addContent(std::string_view lines, sVarsMap vars)
 	{
 		auto lineEndings = config().lineEndings;
 		std::size_t offset = 0;
@@ -64,27 +64,29 @@ namespace fbrpc
 				offset += lineEndings.size();
 
 		} while (offset != std::string::npos);
+
+		return m_output.length();
 	}
 
-	void sPrinter::addSingleLine(std::string_view singleLine, sVarsMap vars)
+	std::string sPrinter::format(std::string_view content, sVarsMap vars)
 	{
 		std::string output;
-		for (auto i = 0; i < singleLine.length();)
+		for (auto i = 0; i < content.length();)
 		{
-			if (singleLine[i] == '$')
+			if (content[i] == '$')
 			{
-				auto end = singleLine.find('$', i + 1);
+				auto end = content.find('$', i + 1);
 				if (end == std::string_view::npos)
 				{
 					logger().error("except $ for variable, but not found");
-					return;
+					return output;
 				}
-				std::string_view var = singleLine.substr(i + 1, end - (i + 1));
+				std::string_view var = content.substr(i + 1, end - (i + 1));
 				auto value = vars.find(var);
 				if (value == vars.end())
 				{
 					logger().error("can't find variable value for: ", var);
-					return;
+					return output;
 				}
 
 				output += std::string(value->second);
@@ -92,13 +94,17 @@ namespace fbrpc
 			}
 			else
 			{
-				output += singleLine[i];
+				output += content[i];
 				++i;
 			}
-
+		}
+		return output;
 		}
 
-		m_output = m_output + std::string(m_indent, ' ') + output + config().lineEndings;
+	void sPrinter::addSingleLine(std::string_view singleLine, sVarsMap vars)
+	{
+		auto output = format(singleLine, vars);
+		appendOrInsert(std::string(m_indent, ' ') + output + config().lineEndings);
 	}
 
 	std::size_t sPrinter::indent() const
@@ -124,5 +130,31 @@ namespace fbrpc
 	std::string sPrinter::getOutput()
 	{
 		return m_output;
+	}
+
+	void sPrinter::appendOrInsert(std::string_view str)
+	{
+		if (m_index == std::string::npos)
+		{
+			m_output += str;
+		}
+		else
+		{
+			m_output.insert(m_index, str);
+			m_index += str.length();
+		}
+	}
+
+	void sPrinter::moveTo(std::size_t index)
+	{
+		m_oldIndent = indent();
+		setIndent(0);
+		setIndex(index);
+	}
+
+	void sPrinter::moveBack()
+	{
+		setIndex(std::string::npos);
+		setIndent(m_oldIndent);
 	}
 }

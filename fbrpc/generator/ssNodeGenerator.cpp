@@ -12,9 +12,9 @@ namespace fbrpc
 		return generateNodeBindingFile(service);
 	}
 
-	bool sNodeGenerator::finish(std::vector<flatbuffers::ServiceDef*> services)
+	bool sNodeGenerator::finish(sContext context)
 	{
-		return finishNodeBindingFile(services);
+		return finishNodeBindingFile(context.services);
 	}
 
 	bool sNodeGenerator::generateNodeBindingFile(flatbuffers::ServiceDef* service)
