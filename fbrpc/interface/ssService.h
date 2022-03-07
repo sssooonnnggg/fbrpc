@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <functional>
 #include <unordered_map>
 #include <type_traits>
@@ -17,6 +18,11 @@ namespace fbrpc
 	class sService : public sFlatBufferHelper
 	{
 	public:
+		struct sOption
+		{
+			bool enableTracing = false;
+		};
+
 		virtual void init() = 0;
 		virtual std::string name() const = 0;
 		virtual std::size_t hash() const = 0;
@@ -25,6 +31,11 @@ namespace fbrpc
 		void processBuffer(sBufferView buffer, sResponder responder);
 		
 		virtual void update() {};
+
+		sOption& option() { return m_option; }
+
+		void enableTracing(bool enable) { m_option.enableTracing = enable; }
+		void trace(std::string_view content);
 
 	protected:
 
@@ -35,5 +46,6 @@ namespace fbrpc
 
 	private:
 		std::unordered_map<std::size_t, sApiWrapper> m_apiWrappers;
+		sOption m_option;
 	};
 }

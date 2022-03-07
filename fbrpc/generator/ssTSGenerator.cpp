@@ -470,16 +470,28 @@ static $api$(req?: any): Promise<$responseType$> {
 
 	bool sTSGenerator::finishTSWrapperFile(const sContext& context)
 	{
+		sTSPrinter typesPrinter;
+		typesPrinter.addHeader();
+
+		generateFromPlainFunction(typesPrinter, context);
+		typesPrinter.nextLine();
+
+		exportDependentTypes(typesPrinter, context);
+
+		typesPrinter.nextLine();
+		exportDependentEnums(typesPrinter, context);
+
+		typesPrinter.addContent("export { Plain } from './FromPlain'");
+		typesPrinter.addContent("export { ComponentTypeMap } from './ComponentPropertyHelper'");
+
+		if (!writter()(typesPrinter.getOutput(), "types.ts"))
+		{
+			logger().error("write tyeps.ts failed");
+			return false;
+		}
+
 		sTSPrinter printer;
 		printer.addHeader();
-
-		generateFromPlainFunction(printer, context);
-		printer.nextLine();
-
-		exportDependentTypes(printer, context);
-
-		printer.nextLine();
-		exportDependentEnums(printer, context);
 
 		printer.nextLine();
 		for (auto service : context.services)
@@ -487,8 +499,7 @@ static $api$(req?: any): Promise<$responseType$> {
 
 		printer.nextLine();
 		printer.addContent("export * from './internal'");
-		printer.addContent("export { Plain } from './FromPlain'");
-		printer.addContent("export { ComponentTypeMap } from './ComponentPropertyHelper'");
+		printer.addContent("export * from './types'");
 
 		return writter()(printer.getOutput(), "FlatBufferAPI.ts");
 	}

@@ -48,13 +48,13 @@ namespace fbrpc
 					};
 
 					printer.addContent(
-R"#(static void $apiName$(fbrpc::sBuffer buffer, std::function<void(fbrpc::sBuffer)> callback)
+R"#(static void $apiName$(fbrpc::sBuffer buffer, fbrpc::sUniqueFunction<void(fbrpc::sBuffer)> callback)
 {
 	static std::size_t apiHash = fbrpc::getHash("$apiName$");
 	auto client = FlatbufferClient::get();
-	client->call(serviceHash(), apiHash, std::move(buffer), [callback](fbrpc::sBufferView view)
+	client->call(serviceHash(), apiHash, std::move(buffer), [cb = std::move(callback)](fbrpc::sBufferView view) mutable
 		{
-			callback(fbrpc::sBuffer::clone(view.data, view.length));
+			cb(fbrpc::sBuffer::clone(view.data, view.length));
 		}
 	, $repeat$);
 })#", vars);

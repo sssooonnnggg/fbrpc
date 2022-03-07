@@ -126,8 +126,11 @@ namespace fbrpc
 
 		if (auto client = m_client.lock())
 		{
-			client->send(std::move(m_pending.data), m_pending.length);
-			m_pending.clear();
+			if (!m_pending.empty())
+			{
+				client->send(std::move(m_pending.data), m_pending.length);
+				m_pending.clear();
+			}
 		}
 	}
 

@@ -70,6 +70,7 @@ namespace fbrpc
 						printer.addContent(R"#(
 addApiWrapper(getHash("$apiName$"), [this](sBufferView buffer, sResponder responder)
 	{
+		trace("$apiName$");
 		auto* request = flatbuffers::GetRoot<$requestName$>(reinterpret_cast<const void*>(buffer.data));
 		auto promise = createPromise<$responseName$>();
 		sUniqueFunction<void()> sendResponse = [capturedPromise = promise.get(), capturedResponder = std::move(responder)]() mutable

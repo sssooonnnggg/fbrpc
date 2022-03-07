@@ -92,7 +92,7 @@ namespace fbrpc
 				return std::weak_ptr<T>(std::static_pointer_cast<T>(*it));
 		}
 
-		using sOnResponse = std::function<void(sBufferView)>;
+		using sOnResponse = fbrpc::sUniqueFunction<void(sBufferView)>;
 		void call(std::size_t service, std::size_t api, sBuffer buffer, sOnResponse onResponse, bool repeat = false);
 
 	protected:

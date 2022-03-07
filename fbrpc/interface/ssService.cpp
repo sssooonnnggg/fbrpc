@@ -18,4 +18,11 @@ namespace fbrpc
 	{
 		m_apiWrappers[hash] = std::move(wrapper);
 	}
+
+	void sService::trace(std::string_view content)
+	{
+		if (m_option.enableTracing)
+			logger().info("[service] [trace]", content);
+	}
+
 }
