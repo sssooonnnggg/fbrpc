@@ -20,7 +20,15 @@ namespace fbrpc::uvwDetail
 
 	void sTCPFlatBufferRpcServer::update()
 	{
+		bool pendingReq = false;
+#if defined(_WIN32) || defined(__WIN32__) || defined(WIN32)
+		do {
+			sUvLoop::getUvLoop()->run<uvw::Loop::Mode::NOWAIT>();
+			pendingReq = sUvLoop::getUvLoop()->raw()->pending_reqs_tail != 0;
+		} while (pendingReq); 
+#else
 		sUvLoop::getUvLoop()->run<uvw::Loop::Mode::NOWAIT>();
+#endif
 		sFlatBufferRpcServer::update();
 	}
 

@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <unordered_map>
 
 namespace fbrpc
 {
@@ -59,6 +60,7 @@ namespace fbrpc
 
 		void addSingleLine(std::string_view line, sVarsMap vars = {});
 		void appendOrInsert(std::string_view str);
+
 
 	private:
 		std::string m_output;

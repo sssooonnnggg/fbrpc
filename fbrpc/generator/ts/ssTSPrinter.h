@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ssPrinter.h"
+#include "fbrpc/generator/ssPrinter.h"
 
 namespace fbrpc
 {

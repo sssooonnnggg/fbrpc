@@ -14,12 +14,12 @@ namespace fbrpc
 
 		virtual void info(std::string_view message)
 		{
-			printf("[fbrpc] [info] %s \r\n", message.data());
+			printf("[fbrpc] [info] %s \n", message.data()); 
 		}
 
 		virtual void error(std::string_view message)
 		{
-			printf("[fbrpc] [error] %s \r\n", message.data());
+			printf("[fbrpc] [error] %s \n", message.data());
 		}
 	};
 

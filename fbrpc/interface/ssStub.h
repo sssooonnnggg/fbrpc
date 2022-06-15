@@ -18,9 +18,6 @@ namespace fbrpc
 	protected:
 		sFlatBufferRpcClient* client() { return m_client; }
 
-		template <class ... Args>
-		void call(Args&& ... args) { client()->call(std::forward<Args>(args)...); }
-
 	private:
 		sFlatBufferRpcClient* m_client;
 	};

@@ -7,6 +7,15 @@
 
 namespace fbrpc
 {
+	bool sCppGenerator::generateDummyFile(std::string fbsFileName)
+	{
+		sCppPrinter printer;
+		printer.addHeader();
+
+		return writter()(printer.getOutput(), fbsFileName + "Service_generated.h")
+			&& writter()(printer.getOutput(), fbsFileName + "Stub_generated.h");
+	}
+
 	bool sCppGenerator::start(flatbuffers::ServiceDef* service)
 	{
 		return generateServiceFile(service) && generateStubFile(service);
@@ -97,6 +106,7 @@ addApiWrapper(getHash("$apiName$"), [this](sBufferView buffer, sResponder respon
 		sCppPrinter printer;
 		printer.addHeader();
 		printer.addInclude("fbrpc/interface/ssStub.h");
+		printer.addInclude("fbrpc/ssFlatBufferRpc.h");
 		printer.addInclude("fbrpc/core/ssBuffer.h");
 		printer.addInclude(serviceName + "_generated.h");
 		printer.nextLine();
@@ -146,7 +156,7 @@ addApiWrapper(getHash("$apiName$"), [this](sBufferView buffer, sResponder respon
 
 					printer.addContent(R"#(static auto apiHash = getHash("$apiName$");
 builder().Finish(request);
-call(serviceHash(), apiHash, sBuffer::clone(builder()), [handler](sBufferView buffer)
+client()->call(serviceHash(), apiHash, sBuffer::clone(builder()), [handler](sBufferView buffer)
 	{
 		auto* response = flatbuffers::GetRoot<$responseName$>(buffer.data);
 		handler(response);

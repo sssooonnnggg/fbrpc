@@ -65,7 +65,7 @@ public:
         );
     }
 
-    void testUnion(const GetUnionRequest* request, std::unique_ptr<sPromise<GetUnionResponse>> response)
+    void testUnion(const GetUnionRequest* request, std::unique_ptr<sPromise<GetUnionResponse>> response) override
     {
         auto& fbb = response->builder();
         std::vector<std::string> stringVector = { "a", "b", "c" };

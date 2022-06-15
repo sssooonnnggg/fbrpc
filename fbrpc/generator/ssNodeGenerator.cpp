@@ -7,6 +7,13 @@
 
 namespace fbrpc
 {
+	bool sNodeGenerator::generateDummyFile(std::string fbsFileName)
+	{
+		sCppPrinter printer;
+		printer.addHeader();
+		return writter()(printer.getOutput(), fbsFileName + "Binding_generated.h");
+	}
+
 	bool sNodeGenerator::start(flatbuffers::ServiceDef* service)
 	{
 		return generateNodeBindingFile(service);
@@ -26,7 +33,6 @@ namespace fbrpc
 		printer.addHeader();
 		printer.addInclude("FlatBufferBinding.h");
 		printer.addInclude("fbrpc/ssFlatBufferRpc.h");
-		printer.addInclude(serviceName + "_generated.h");
 		printer.nextLine();
 
 		{

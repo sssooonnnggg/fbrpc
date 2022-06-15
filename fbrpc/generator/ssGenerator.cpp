@@ -10,7 +10,7 @@
 #include "ssGenerator.h"
 #include "ssCppGenerator.h"
 #include "ssNodeGenerator.h"
-#include "ssTSGenerator.h"
+#include "fbrpc/generator/ts/ssTSGenerator.h"
 
 namespace fbrpc
 {
@@ -103,11 +103,18 @@ namespace fbrpc
 			return false;
 		}
 
+		auto generator = createLanguageGenerator();
+		if (!generator)
+		{
+			logger().error("no available generator");
+			return false;
+		}
+
 		const auto& services = parser.services_.vec;
 		if (services.size() == 0)
 		{
-			logger().info("no service found, ignore", sourceName);
-			return true;
+			logger().info("no service found, generate dummy file for", sourceName);
+			return generator->generateDummyFile(std::filesystem::path(sourceName).stem().string());
 		}
 
 		if (services.size() > 1)
@@ -128,13 +135,6 @@ namespace fbrpc
 		if (namespaces.size() > 1)
 		{
 			logger().error("unsupport nested namespace");
-			return false;
-		}
-
-		auto generator = createLanguageGenerator();
-		if (!generator)
-		{
-			logger().error("no available generator");
 			return false;
 		}
 		

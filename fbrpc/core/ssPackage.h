@@ -99,7 +99,7 @@ namespace fbrpc
 	private:
 		void finish()
 		{
-			*(reinterpret_cast<std::size_t*>(m_buffer.data.get())) = m_buffer.length;
+			*(reinterpret_cast<std::size_t*>(m_buffer.data())) = m_buffer.length();
 		}
 
 	private:

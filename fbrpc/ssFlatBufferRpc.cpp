@@ -35,10 +35,11 @@ namespace fbrpc
 				m_client = conn.connection;
 				if (auto client = m_client.lock())
 				{
-					logger().info("new client connection", client->getId());
-					client->on<sError>([this, client](const sError& error) { processClientError(client->getId(), error); });
-					client->on<sCloseEvent>([this, client](const sCloseEvent& e) { processClientClose(client->getId(), e); });
-					client->on<sEndEvent>([this, client](const sEndEvent& e) { processClientEnd(client->getId(), e); });
+					auto id = client->getId();
+					logger().info("new client connection", id);
+					client->on<sError>([this, id](const sError& error) { processClientError(id, error); });
+					client->on<sCloseEvent>([this, id](const sCloseEvent& e) { processClientClose(id, e); });
+					client->on<sEndEvent>([this, id](const sEndEvent& e) { processClientEnd(id, e); });
 					client->on<sDataEvent>([this](const sDataEvent& e) { processBuffer(sBufferView{ e.data, e.length }); });
 				}
 			}
@@ -79,13 +80,15 @@ namespace fbrpc
 
 	void sFlatBufferRpcServer::processNextPackage()
 	{
-		if (m_received.empty())
-			return;
-
-		sPackageReader reader(m_received.view());
-
-		if (reader.ready())
+		while (true)
 		{
+			if (m_received.empty())
+				break;
+
+			sPackageReader reader(m_received.view());
+			if (!reader.ready())
+				break;
+
 			auto packageSize = reader.packageSize();
 			auto serviceHash = reader.serviceHash();
 
@@ -110,13 +113,12 @@ namespace fbrpc
 			}
 
 			m_received.consume(packageSize);
-			processNextPackage();
 		}
 	}
 
 	void sFlatBufferRpcServer::sendResponse(sBuffer response)
 	{
-		m_pending.append(response);
+		m_pending.append(std::move(response));
 	}
 	
 	void sFlatBufferRpcServer::update()
@@ -125,13 +127,8 @@ namespace fbrpc
 			service->update();
 
 		if (auto client = m_client.lock())
-		{
 			if (!m_pending.empty())
-			{
-				client->send(std::move(m_pending.data), m_pending.length);
-				m_pending.clear();
-			}
-		}
+				client->send(std::move(m_pending));
 	}
 
 	////////////////////////////////////////////////////////////////////////////////
@@ -227,7 +224,7 @@ namespace fbrpc
 		m_responseMap[requestId] = { std::move(onResponse), repeat };
 
 		sBuffer package = sPackageWritter().write(requestId).write(service).write(api).write(std::move(buffer)).getBuffer();
-		m_connection->send(std::move(package.data), package.length);
+		m_connection->send(std::move(package));
 	}
 
 	std::size_t sFlatBufferRpcClient::generateRequestId()

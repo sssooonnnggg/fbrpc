@@ -1,4 +1,5 @@
 #include <cassert>
+#include "fbrpc/core/ssBuffer.h"
 #include "ssTCPConnection.h"
 
 namespace fbrpc::uvwDetail
@@ -27,6 +28,15 @@ namespace fbrpc::uvwDetail
 	void sTCPConnection::send(std::unique_ptr<char[]> data, std::size_t length)
 	{
 		m_handle->write(std::move(data), length);
+	}
+
+	void sTCPConnection::send(sBuffer&& buffer)
+	{
+		auto data = buffer.data();
+		auto length = buffer.length();
+		auto deleter = [buf = std::move(buffer)](char*) {};
+		std::unique_ptr<char[], decltype(deleter)> holder{ data, deleter };
+		m_handle->write(std::move(holder), length);
 	}
 
 	void sTCPConnection::close()

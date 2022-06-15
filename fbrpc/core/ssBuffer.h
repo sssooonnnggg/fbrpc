@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cassert>
+#include <deque>
+#include <iterator>
 #include <memory>
 #include <optional>
 
@@ -36,13 +38,13 @@ namespace fbrpc
 	{
 		static sBuffer clone(const sBuffer& src)
 		{
-			return clone(src.data.get(), src.length);
+			return clone(src.data(), src.length());
 		}
 
 		static sBuffer clone(const sBuffer& src, std::size_t offset, std::size_t size)
 		{
-			assert(offset + size <= src.length);
-			return clone(src.data.get() + offset, size);
+			assert(offset + size <= src.length());
+			return clone(src.data() + offset, size);
 		}
 
 		static sBuffer clone(const flatbuffers::FlatBufferBuilder& builder)
@@ -54,19 +56,25 @@ namespace fbrpc
 
 		static sBuffer clone(const char* data, std::size_t length)
 		{
-			auto buffer = std::make_unique<char[]>(length);
-			std::memcpy(buffer.get(), data, length);
-			return sBuffer{ std::move(buffer), length };
+			std::vector<char> buffer(length);
+			std::copy(data, data + length, buffer.data());
+			return sBuffer{ 0, std::move(buffer) };
 		}
 
-		static sBuffer from(char* data, std::size_t length)
+		sBuffer(std::size_t s = 0, std::vector<char> buf = {})
+			: start(s), buffer(std::move(buf)) {}
+		sBuffer(const sBuffer& buffer) = default;
+		sBuffer(sBuffer&& buf)
+			: start(buf.start), buffer(std::move(buf.buffer)) {}
+
+		void append(const sBuffer& input)
 		{
-			return sBuffer{ std::unique_ptr<char[]>(data), length };
+			buffer.insert(buffer.end(), input.buffer.begin() + input.start, input.buffer.end());
 		}
 
-		void append(const sBuffer& buffer)
+		void append(sBuffer&& input)
 		{
-			append(buffer.data.get(), buffer.length);
+			buffer.insert(buffer.end(), std::make_move_iterator(input.buffer.begin() + input.start), std::make_move_iterator(input.buffer.end()));
 		}
 
 		template<class T>
@@ -75,53 +83,51 @@ namespace fbrpc
 			append(reinterpret_cast<const char*>(&value), sizeof(T));
 		}
 
-		void append(const flatbuffers::FlatBufferBuilder& buffer)
+		void append(const flatbuffers::FlatBufferBuilder& fb)
 		{
-			append(reinterpret_cast<const char*>(buffer.GetBufferPointer()), buffer.GetSize());
+			append(reinterpret_cast<const char*>(fb.GetBufferPointer()), fb.GetSize());
 		}
 
 		void append(const char* appendData, std::size_t appendSize)
 		{
-			auto newData = std::make_unique<char[]>(length + appendSize);
-			memcpy(newData.get(), data.get(), length);
-			memcpy(newData.get() + length, appendData, appendSize);
-			length += appendSize;
-			data = std::move(newData);
+			auto oldSize = buffer.size();
+			buffer.resize(oldSize + appendSize);
+			std::copy(appendData, appendData + appendSize, buffer.data() + oldSize);
 		}
 
 		void consume(std::size_t size)
 		{
-			assert(length >= size);
-			if (length == size)
+			assert(length() >= size);
+			if (length() == size)
 			{
-				data.reset();
-				length = 0;
+				start = 0;
+				buffer.clear();
 			}
 			else
 			{
-				auto newData = std::make_unique<char[]>(length - size);
-				memcpy(newData.get(), data.get() + size, length - size);
-				length -= size;
-				data = std::move(newData);
+				start += size;
 			}
 		}
 
-		sBufferView view(std::size_t start = 0)
+		sBufferView view(std::size_t offset = 0)
 		{
-			assert(start < length);
-			return sBufferView{ data.get() + start, length - start};
+			assert(offset < length());
+			return sBufferView{ data() + offset, length() - offset};
 		}
 
-		sBufferView view(std::size_t start, std::size_t size)
+		sBufferView view(std::size_t offset, std::size_t size)
 		{
-			assert(start < length && start + size <= length);
-			return sBufferView{ data.get() + start, size };
+			assert(offset < length() && offset + size <= length());
+			return sBufferView{ data() + offset, size };
 		}
 
-		bool empty() const { return length == 0; }
-		void clear() { data.reset(); length = 0; }
+		bool empty() const { return length() == 0; }
+		void clear() { buffer.clear(); }
+		const char* data() const { return buffer.data() + start; }
+		char* data() { return &(buffer[0]) + start; }
+		std::size_t length() const { return buffer.size() - start; }
 
-		std::unique_ptr<char[]> data;
-		std::size_t length = 0;
+		std::size_t			start;
+		std::vector<char> 	buffer;
 	};
 }

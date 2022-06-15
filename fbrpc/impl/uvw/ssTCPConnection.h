@@ -2,6 +2,7 @@
 
 #include <uvw.hpp>
 
+#include "fbrpc/core/ssBuffer.h"
 #include "fbrpc/interface/ssConnection.h"
 
 #include "fbrpc/core/ssEmitter.h"
@@ -18,6 +19,7 @@ namespace fbrpc::uvwDetail
 		void initDefaultEventHandler();
 
 		void send(std::unique_ptr<char[]> data, std::size_t length) override;
+		void send(sBuffer&& buffer) override;
 		void close() override;
 	private:
 		std::shared_ptr<uvw::TCPHandle> m_handle;

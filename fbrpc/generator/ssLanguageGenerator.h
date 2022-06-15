@@ -20,6 +20,7 @@ namespace fbrpc
 		virtual ~sLanguageGenerator() = default;
 		sWriteFileDelegate writter() { return m_writter; }
 
+		virtual bool generateDummyFile(std::string fbsFileName) { return true; };
 		virtual bool start(flatbuffers::ServiceDef* service) = 0;
 
 		struct sContext

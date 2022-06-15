@@ -48,7 +48,7 @@ namespace fbrpc
 
             void off(const sSlot& slot)
             {
-                auto it = std::find_if(m_listeners.being(), m_listeners.end(). [](auto&& ctx) { return ctx->slot == slot });
+                auto it = std::find_if(m_listeners.being(), m_listeners.end(), [&slot](auto&& ctx) { return ctx->slot == slot; });
                 if (it != m_listeners.end())
                     m_listeners.erase(it);
             }

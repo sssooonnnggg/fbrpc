@@ -9,6 +9,7 @@ namespace fbrpc
 	public:
 		sCppGenerator(sWriteFileDelegate writter) : sLanguageGenerator(std::move(writter)) {}
 
+		bool generateDummyFile(std::string fbsFileName) override;
 		bool start(flatbuffers::ServiceDef* service) override;
 	private:
 		bool generateServiceFile(flatbuffers::ServiceDef* service);

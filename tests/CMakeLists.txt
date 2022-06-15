@@ -3,7 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 # gen flatbuffers proto
 if(USE_VCPKG)
     find_path(FLAT_BUFFER_PATH flatbuffers/flatbuffers.h NO_CACHE)
-    set(FLATC_PATH "${FLAT_BUFFER_PATH}/../tools/flatbuffers/flatc")
+    set(FLATC_PATH "${FLAT_BUFFER_PATH}/../../${VCPKG_TARGET_TRIPLET}/tools/flatbuffers/flatc")
+    message(${FLATC_PATH})
 else()
     set(FLATC_PATH ${FLATBUFFERS_FLATC_EXECUTABLE})
 endif()
@@ -49,6 +50,10 @@ add_dependencies(fbrpc_test fbrpc_generator)
 
 target_include_directories(fbrpc_test PRIVATE ${FBRPC_ROOT})
 target_link_libraries(fbrpc_test libfbrpc)
+
+if (UNIX AND USE_VCPKG)
+    target_link_libraries(fbrpc_test ${CMAKE_DL_LIBS})
+endif ()
 
 set(TARGET_OUTPUT_DIR ${FBRPC_ROOT}/bin)
 
